@@ -29,7 +29,7 @@ parser = argparse.ArgumentParser(description="Stream collector")
 parser.add_argument("--trial_name" , "-t", type=str)
 args = parser.parse_args()
 
-outpath = f'./export/{args.trial_name}_nuc{os.environ['USER_ID']}_raw'
+outpath = f"./export/{args.trial_name}_nuc{os.environ['USER_ID']}_raw"
 
 out_infra1 = f'{outpath}/infra1_raw'
 out_infra2 = f'{outpath}/infra2_raw'
@@ -120,3 +120,5 @@ make_archive(out_infra1, out_infra1+".zip")
 make_archive(out_infra2, out_infra2+".zip")
 
 make_archive(outpath, outpath+".zip")
+if os.path.exists(outpath+".zip"):
+    shutil.rmtree(outpath)
