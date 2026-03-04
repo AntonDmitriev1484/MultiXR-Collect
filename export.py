@@ -33,10 +33,12 @@ outpath = f"./export/{args.trial_name}_nuc{os.environ['USER_ID']}_raw"
 
 out_infra1 = f'{outpath}/infra1_raw'
 out_infra2 = f'{outpath}/infra2_raw'
+out_calib = f'{outpath}/calibration'
 
 os.makedirs(outpath, exist_ok=True)
 os.makedirs(out_infra1, exist_ok=True)
 os.makedirs(out_infra2, exist_ok=True)
+os.makedirs(out_calib, exist_ok=True)
 
 bagpath = Path(f'./ros2/{args.trial_name}')
 
@@ -116,8 +118,16 @@ def make_archive(source, destination):
 
 # make_archive('/path/to/folder', '/path/to/folder.zip')
 
+# Copy over all relevant calibration files with this dataset
+in_calib = '~/MultiXR-Calibrate/use'
+shutil.copytree(Path(in_calib).expanduser(), Path(out_calib), dirs_exist_ok=True)
+
 make_archive(out_infra1, out_infra1+".zip")
+if os.path.exists(out_infra1+".zip"):
+    shutil.rmtree(out_infra1)
 make_archive(out_infra2, out_infra2+".zip")
+if os.path.exists(out_infra2+".zip"):
+    shutil.rmtree(out_infra2)
 
 make_archive(outpath, outpath+".zip")
 if os.path.exists(outpath+".zip"):
