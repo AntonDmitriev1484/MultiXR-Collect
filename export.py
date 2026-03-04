@@ -26,7 +26,7 @@ from utils.ros_msg_handlers import *
 
 
 parser = argparse.ArgumentParser(description="Stream collector")
-parser.add_argument("--trial_name" , "-t", type=str)
+parser.add_argument("trial_name" , type=str)
 args = parser.parse_args()
 
 outpath = f"./export/{args.trial_name}_nuc{os.environ['USER_ID']}_raw"
