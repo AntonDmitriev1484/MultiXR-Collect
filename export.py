@@ -9,6 +9,9 @@ import csv
 import yaml
 import argparse
 
+import sys
+import subprocess
+
 import cv2
 import numpy as np
 from types import SimpleNamespace
@@ -29,11 +32,13 @@ parser = argparse.ArgumentParser(description="Stream collector")
 parser.add_argument("trial_name" , type=str)
 args = parser.parse_args()
 
-outpath = f"./export/{args.trial_name}_nuc{os.environ['USER_ID']}_raw"
+label = f"{args.trial_name}_nuc{os.environ['USER_ID']}_raw"
+outpath = f"./export/{label}"
 
 out_infra1 = f'{outpath}/infra1_raw'
 out_infra2 = f'{outpath}/infra2_raw'
 out_calib = f'{outpath}/calibration'
+out_ros1 = f'{outpath}/ros1'
 
 os.makedirs(outpath, exist_ok=True)
 os.makedirs(out_infra1, exist_ok=True)
@@ -107,6 +112,8 @@ time = {
 }
 json.dump(time, open(outpath+"/meta.json", 'w'), cls=NumpyEncoder, indent=1)
 
+
+
 def make_archive(source, destination):
         base = os.path.basename(destination)
         name = base.split('.')[0]
@@ -115,13 +122,32 @@ def make_archive(source, destination):
         archive_to = os.path.basename(source.strip(os.sep))
         shutil.make_archive(name, format, archive_from, archive_to)
         shutil.move('%s.%s'%(name,format), destination)
-
 # make_archive('/path/to/folder', '/path/to/folder.zip')
+
+
+# Make the ros1bag for later use in ORBSLAM
+
+src = bagpath
+dst = outpath + "/" + label +".bag"
+cmd = [
+    "rosbags-convert",
+    "--src", str(src),
+    "--dst", str(dst),
+    "--include-topic", "/camera/camera/imu",
+    "--include-topic", "/camera/camera/infra2/image_rect_raw",
+    "--include-topic", "/camera/camera/infra1/image_rect_raw",
+]
+try:
+    subprocess.run(cmd, check=True)
+except subprocess.CalledProcessError as e:
+    print(f"Conversion failed with error: {e}")
+    sys.exit(1)
 
 # Copy over all relevant calibration files with this dataset
 in_calib = '~/MultiXR-Calibrate/use'
 shutil.copytree(Path(in_calib).expanduser(), Path(out_calib), dirs_exist_ok=True)
 
+# Zip infra frames
 make_archive(out_infra1, out_infra1+".zip")
 if os.path.exists(out_infra1+".zip"):
     shutil.rmtree(out_infra1)
@@ -129,6 +155,6 @@ make_archive(out_infra2, out_infra2+".zip")
 if os.path.exists(out_infra2+".zip"):
     shutil.rmtree(out_infra2)
 
-make_archive(outpath, outpath+".zip")
-if os.path.exists(outpath+".zip"):
-    shutil.rmtree(outpath)
+# make_archive(outpath, outpath+".zip")
+# if os.path.exists(outpath+".zip"):
+#     shutil.rmtree(outpath)
