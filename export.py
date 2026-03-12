@@ -129,6 +129,9 @@ def make_archive(source, destination):
 
 src = bagpath
 dst = outpath + "/" + label +".bag"
+if os.path.exists(dst):
+    os.remove(dst)
+
 cmd = [
     "rosbags-convert",
     "--src", str(src),
