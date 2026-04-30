@@ -6,7 +6,7 @@ if [ $# -lt 3 ]; then
 fi
 
 source /opt/ros/humble/setup.bash
-
+source /home/admi3ev/Beluga-Firmware-Mod/ROS/install/setup.bash
 cd ros2/
 
 DELAY=$1
